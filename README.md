@@ -1,6 +1,6 @@
 # EthernetRacer
 
-Ethernet Racer is a clone of [TuxRacer](https://github.com/ebbejan/switch-racer-js) to try out agent-based programming. 
+Ethernet Racer is a clone of [TuxRacer](https://github.com/ebbejan/tux-racer-js) to try out agent-based programming. 
 ![EthernetRacer Screenshot](screenshot.png)
 ![EthernetRacer Screenshot 2](screenshot2.png)
 
