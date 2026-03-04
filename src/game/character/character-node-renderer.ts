@@ -160,18 +160,53 @@ void main() {
     const cavities: MeshData = { positions: [], normals: [], indices: [] };
     const contacts: MeshData = { positions: [], normals: [], indices: [] };
 
-    CharacterNodeRenderer.addCuboid(body, -0.16, 0.16, -0.34, 0.34, -0.09, 0.09);
-    CharacterNodeRenderer.addCuboid(body, -0.145, 0.145, -0.29, 0.31, 0.09, 0.105);
-    CharacterNodeRenderer.addCuboid(body, -0.06, 0.06, 0.34, 0.40, -0.035, 0.035);
+    const meshScale = 2;
+    const scale = (value: number): number => value * meshScale;
+
+    CharacterNodeRenderer.addCuboid(
+      body,
+      scale(-0.16),
+      scale(0.16),
+      scale(-0.34),
+      scale(0.34),
+      scale(-0.09),
+      scale(0.09),
+    );
+    CharacterNodeRenderer.addCuboid(
+      body,
+      scale(-0.145),
+      scale(0.145),
+      scale(-0.29),
+      scale(0.31),
+      scale(0.09),
+      scale(0.105),
+    );
+    CharacterNodeRenderer.addCuboid(
+      body,
+      scale(-0.06),
+      scale(0.06),
+      scale(0.34),
+      scale(0.4),
+      scale(-0.035),
+      scale(0.035),
+    );
 
     // Back RJ45 panel area: 5 ports stacked vertically (like reference image)
-    CharacterNodeRenderer.addCuboid(body, -0.118, 0.118, -0.31, 0.27, -0.109, -0.09);
+    CharacterNodeRenderer.addCuboid(
+      body,
+      scale(-0.118),
+      scale(0.118),
+      scale(-0.31),
+      scale(0.27),
+      scale(-0.109),
+      scale(-0.09),
+    );
 
-    const portCenterX = 0;
-    const topPortCenterY = 0.205;
-    const portStepY = 0.112;
-    const portHalfWidth = 0.072;
-    const portHalfHeight = 0.036;
+    const portCenterX = scale(0);
+    const topPortCenterY = scale(0.205);
+    const portStepY = scale(0.112);
+    const portHalfWidth = scale(0.072);
+    const portHalfHeight = scale(0.036);
 
     for (let portIndex = 0; portIndex < 5; portIndex++) {
       const centerY = topPortCenterY - portIndex * portStepY;
@@ -179,85 +214,85 @@ void main() {
       // Opening frame walls (square-ish mouth)
       CharacterNodeRenderer.addCuboid(
         cavities,
-        portCenterX - (portHalfWidth + 0.004),
-        portCenterX - (portHalfWidth - 0.002),
-        centerY - (portHalfHeight + 0.004),
-        centerY + (portHalfHeight + 0.004),
-        -0.124,
-        -0.09,
+        portCenterX - (portHalfWidth + scale(0.004)),
+        portCenterX - (portHalfWidth - scale(0.002)),
+        centerY - (portHalfHeight + scale(0.004)),
+        centerY + (portHalfHeight + scale(0.004)),
+        scale(-0.124),
+        scale(-0.09),
       );
       CharacterNodeRenderer.addCuboid(
         cavities,
-        portCenterX + (portHalfWidth - 0.002),
-        portCenterX + (portHalfWidth + 0.004),
-        centerY - (portHalfHeight + 0.004),
-        centerY + (portHalfHeight + 0.004),
-        -0.124,
-        -0.09,
+        portCenterX + (portHalfWidth - scale(0.002)),
+        portCenterX + (portHalfWidth + scale(0.004)),
+        centerY - (portHalfHeight + scale(0.004)),
+        centerY + (portHalfHeight + scale(0.004)),
+        scale(-0.124),
+        scale(-0.09),
       );
       CharacterNodeRenderer.addCuboid(
         cavities,
-        portCenterX - (portHalfWidth - 0.002),
-        portCenterX + (portHalfWidth - 0.002),
-        centerY + (portHalfHeight - 0.001),
-        centerY + (portHalfHeight + 0.004),
-        -0.124,
-        -0.09,
+        portCenterX - (portHalfWidth - scale(0.002)),
+        portCenterX + (portHalfWidth - scale(0.002)),
+        centerY + (portHalfHeight - scale(0.001)),
+        centerY + (portHalfHeight + scale(0.004)),
+        scale(-0.124),
+        scale(-0.09),
       );
       CharacterNodeRenderer.addCuboid(
         cavities,
-        portCenterX - (portHalfWidth - 0.002),
-        portCenterX + (portHalfWidth - 0.002),
-        centerY - (portHalfHeight + 0.004),
-        centerY - (portHalfHeight - 0.001),
-        -0.124,
-        -0.09,
+        portCenterX - (portHalfWidth - scale(0.002)),
+        portCenterX + (portHalfWidth - scale(0.002)),
+        centerY - (portHalfHeight + scale(0.004)),
+        centerY - (portHalfHeight - scale(0.001)),
+        scale(-0.124),
+        scale(-0.09),
       );
 
       // Deep back plate inside cavity
       CharacterNodeRenderer.addCuboid(
         cavities,
-        portCenterX - (portHalfWidth - 0.010),
-        portCenterX + (portHalfWidth - 0.010),
-        centerY - (portHalfHeight - 0.008),
-        centerY + (portHalfHeight - 0.008),
-        -0.128,
-        -0.123,
+        portCenterX - (portHalfWidth - scale(0.01)),
+        portCenterX + (portHalfWidth - scale(0.01)),
+        centerY - (portHalfHeight - scale(0.008)),
+        centerY + (portHalfHeight - scale(0.008)),
+        scale(-0.128),
+        scale(-0.123),
       );
 
       // Upper latch shelf inside cavity
       CharacterNodeRenderer.addCuboid(
         cavities,
-        portCenterX - (portHalfWidth - 0.014),
-        portCenterX + (portHalfWidth - 0.014),
-        centerY + 0.012,
-        centerY + 0.019,
-        -0.114,
-        -0.101,
+        portCenterX - (portHalfWidth - scale(0.014)),
+        portCenterX + (portHalfWidth - scale(0.014)),
+        centerY + scale(0.012),
+        centerY + scale(0.019),
+        scale(-0.114),
+        scale(-0.101),
       );
 
       // Gold contact rail
       CharacterNodeRenderer.addCuboid(
         contacts,
-        portCenterX - (portHalfWidth - 0.017),
-        portCenterX + (portHalfWidth - 0.017),
-        centerY + 0.015,
-        centerY + 0.018,
-        -0.125,
-        -0.119,
+        portCenterX - (portHalfWidth - scale(0.017)),
+        portCenterX + (portHalfWidth - scale(0.017)),
+        centerY + scale(0.015),
+        centerY + scale(0.018),
+        scale(-0.125),
+        scale(-0.119),
       );
 
       // Eight contact pins
       for (let pinIndex = 0; pinIndex < 8; pinIndex++) {
-        const pinX = portCenterX - 0.046 + pinIndex * 0.013;
+        const pinX = portCenterX - scale(0.046) + pinIndex * scale(0.013);
         CharacterNodeRenderer.addCuboid(
           contacts,
-          pinX - 0.0018,
-          pinX + 0.0018,
-          centerY + 0.003,
-          centerY + 0.018,
-          -0.1245,
-          -0.1185,
+          pinX - scale(0.0018),
+          pinX + scale(0.0018),
+          centerY + scale(0.003),
+          centerY + scale(0.018),
+          scale(-0.1245),
+          scale(-0.1185),
         );
       }
     }
