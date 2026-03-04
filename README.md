@@ -1,9 +1,9 @@
 # EthernetRacer
 
-Ethernet Racer is a clone of [switchRacer](https://github.com/ebbejan/switch-racer-js) to try out agent-based programming. 
+Ethernet Racer is a clone of [TuxRacer](https://github.com/ebbejan/switch-racer-js) to try out agent-based programming. 
 ![EthernetRacer Screenshot](screenshot.png)
 
-It is a port / rewrite of *Extreme switch Racer*, which itself is based on the original *switch Racer* game. This project allows you to enjoy switch Racer directly in your web browser, supporting all major desktop and mobile browsers.
+It is a port / rewrite of *Extreme Tux Racer*, which itself is based on the original *Tux Racer* game. This project allows you to enjoy switch Racer directly in your web browser, supporting all major desktop and mobile browsers.
 
 **Note:** This project is in an early development stage and far from complete. However, some courses are already functional enough to provide a fun experience (at least for me!).
 
@@ -106,7 +106,7 @@ Contributions are welcome! Feel free to submit issues, feature requests, or pull
 
 ## Credits
 
-### Original *Extreme switch Racer* Team
+### Original *Extreme Tux Racer* Team
 - Steven Bell
 - Kristian Picon
 - Nicosmos
@@ -114,7 +114,7 @@ Contributions are welcome! Feel free to submit issues, feature requests, or pull
 - Philipp Kloke
 - Marko Lindqvist
 
-### Original *switch Racer* Authors
+### Original *Tux Racer* Authors
 - Eric Hall
 - Jasmin Patry
 - Mark Riddell
