@@ -19,8 +19,11 @@ type MeshData = {
 
 type SwitchMeshes = {
   body: MeshData;
-  cavities: MeshData;
+  topCube: MeshData;
+  frames: MeshData;
+  interiors: MeshData;
   contacts: MeshData;
+  leds: MeshData;
 };
 
 export class CharacterNodeRenderer {
@@ -67,8 +70,11 @@ void main() {
   };
 
   private bodyRenderingInfo: NodeRenderingInfo;
-  private cavityRenderingInfo: NodeRenderingInfo;
+  private topCubeRenderingInfo: NodeRenderingInfo;
+  private frameRenderingInfo: NodeRenderingInfo;
+  private interiorRenderingInfo: NodeRenderingInfo;
   private contactRenderingInfo: NodeRenderingInfo;
+  private ledRenderingInfo: NodeRenderingInfo;
 
   private shader: WebGLProgram;
 
@@ -157,8 +163,11 @@ void main() {
 
   private static createSwitchMeshes(): SwitchMeshes {
     const body: MeshData = { positions: [], normals: [], indices: [] };
-    const cavities: MeshData = { positions: [], normals: [], indices: [] };
+    const topCube: MeshData = { positions: [], normals: [], indices: [] };
+    const frames: MeshData = { positions: [], normals: [], indices: [] };
+    const interiors: MeshData = { positions: [], normals: [], indices: [] };
     const contacts: MeshData = { positions: [], normals: [], indices: [] };
+    const leds: MeshData = { positions: [], normals: [], indices: [] };
 
     const meshScale = 2;
     const scale = (value: number): number => value * meshScale;
@@ -182,7 +191,7 @@ void main() {
       scale(0.105),
     );
     CharacterNodeRenderer.addCuboid(
-      body,
+      topCube,
       scale(-0.06),
       scale(0.06),
       scale(0.34),
@@ -205,99 +214,198 @@ void main() {
     const portCenterX = scale(0);
     const topPortCenterY = scale(0.205);
     const portStepY = scale(0.112);
-    const portHalfWidth = scale(0.072);
-    const portHalfHeight = scale(0.036);
+    const portHalfWidth = scale(0.046);
+    const portHalfHeight = scale(0.032);
 
     for (let portIndex = 0; portIndex < 5; portIndex++) {
       const centerY = topPortCenterY - portIndex * portStepY;
 
       // Opening frame walls (square-ish mouth)
       CharacterNodeRenderer.addCuboid(
-        cavities,
-        portCenterX - (portHalfWidth + scale(0.004)),
-        portCenterX - (portHalfWidth - scale(0.002)),
-        centerY - (portHalfHeight + scale(0.004)),
-        centerY + (portHalfHeight + scale(0.004)),
+        frames,
+        portCenterX - (portHalfWidth + scale(0.0045)),
+        portCenterX - (portHalfWidth - scale(0.0015)),
+        centerY - (portHalfHeight + scale(0.0045)),
+        centerY + (portHalfHeight + scale(0.0045)),
         scale(-0.124),
         scale(-0.09),
       );
       CharacterNodeRenderer.addCuboid(
-        cavities,
-        portCenterX + (portHalfWidth - scale(0.002)),
-        portCenterX + (portHalfWidth + scale(0.004)),
-        centerY - (portHalfHeight + scale(0.004)),
-        centerY + (portHalfHeight + scale(0.004)),
+        frames,
+        portCenterX + (portHalfWidth - scale(0.0015)),
+        portCenterX + (portHalfWidth + scale(0.0045)),
+        centerY - (portHalfHeight + scale(0.0045)),
+        centerY + (portHalfHeight + scale(0.0045)),
         scale(-0.124),
         scale(-0.09),
       );
       CharacterNodeRenderer.addCuboid(
-        cavities,
-        portCenterX - (portHalfWidth - scale(0.002)),
-        portCenterX + (portHalfWidth - scale(0.002)),
-        centerY + (portHalfHeight - scale(0.001)),
-        centerY + (portHalfHeight + scale(0.004)),
+        frames,
+        portCenterX - (portHalfWidth - scale(0.0015)),
+        portCenterX + (portHalfWidth - scale(0.0015)),
+        centerY + (portHalfHeight - scale(0.0005)),
+        centerY + (portHalfHeight + scale(0.0045)),
         scale(-0.124),
         scale(-0.09),
       );
       CharacterNodeRenderer.addCuboid(
-        cavities,
-        portCenterX - (portHalfWidth - scale(0.002)),
-        portCenterX + (portHalfWidth - scale(0.002)),
-        centerY - (portHalfHeight + scale(0.004)),
-        centerY - (portHalfHeight - scale(0.001)),
+        frames,
+        portCenterX - (portHalfWidth - scale(0.0015)),
+        portCenterX + (portHalfWidth - scale(0.0015)),
+        centerY - (portHalfHeight + scale(0.0045)),
+        centerY - (portHalfHeight - scale(0.0005)),
         scale(-0.124),
         scale(-0.09),
+      );
+
+      // Front bezel ring to make the white jack outline pop
+      CharacterNodeRenderer.addCuboid(
+        frames,
+        portCenterX - (portHalfWidth + scale(0.0065)),
+        portCenterX - (portHalfWidth + scale(0.0035)),
+        centerY - (portHalfHeight + scale(0.0065)),
+        centerY + (portHalfHeight + scale(0.0065)),
+        scale(-0.092),
+        scale(-0.085),
+      );
+      CharacterNodeRenderer.addCuboid(
+        frames,
+        portCenterX + (portHalfWidth + scale(0.0035)),
+        portCenterX + (portHalfWidth + scale(0.0065)),
+        centerY - (portHalfHeight + scale(0.0065)),
+        centerY + (portHalfHeight + scale(0.0065)),
+        scale(-0.092),
+        scale(-0.085),
+      );
+      CharacterNodeRenderer.addCuboid(
+        frames,
+        portCenterX - (portHalfWidth + scale(0.0035)),
+        portCenterX + (portHalfWidth + scale(0.0035)),
+        centerY + (portHalfHeight + scale(0.0035)),
+        centerY + (portHalfHeight + scale(0.0065)),
+        scale(-0.092),
+        scale(-0.085),
+      );
+      CharacterNodeRenderer.addCuboid(
+        frames,
+        portCenterX - (portHalfWidth + scale(0.0035)),
+        portCenterX + (portHalfWidth + scale(0.0035)),
+        centerY - (portHalfHeight + scale(0.0065)),
+        centerY - (portHalfHeight + scale(0.0035)),
+        scale(-0.092),
+        scale(-0.085),
       );
 
       // Deep back plate inside cavity
       CharacterNodeRenderer.addCuboid(
-        cavities,
-        portCenterX - (portHalfWidth - scale(0.01)),
-        portCenterX + (portHalfWidth - scale(0.01)),
-        centerY - (portHalfHeight - scale(0.008)),
-        centerY + (portHalfHeight - scale(0.008)),
-        scale(-0.128),
-        scale(-0.123),
+        interiors,
+        portCenterX - (portHalfWidth - scale(0.0085)),
+        portCenterX + (portHalfWidth - scale(0.0085)),
+        centerY - (portHalfHeight - scale(0.007)),
+        centerY + (portHalfHeight - scale(0.007)),
+        scale(-0.131),
+        scale(-0.124),
       );
 
       // Upper latch shelf inside cavity
       CharacterNodeRenderer.addCuboid(
-        cavities,
-        portCenterX - (portHalfWidth - scale(0.014)),
-        portCenterX + (portHalfWidth - scale(0.014)),
-        centerY + scale(0.012),
-        centerY + scale(0.019),
-        scale(-0.114),
+        interiors,
+        portCenterX - (portHalfWidth - scale(0.0125)),
+        portCenterX + (portHalfWidth - scale(0.0125)),
+        centerY + scale(0.010),
+        centerY + scale(0.017),
+        scale(-0.115),
         scale(-0.101),
+      );
+
+      // Inner dark side walls and floor for stronger depth cue
+      CharacterNodeRenderer.addCuboid(
+        interiors,
+        portCenterX - (portHalfWidth - scale(0.005)),
+        portCenterX - (portHalfWidth - scale(0.0015)),
+        centerY - (portHalfHeight - scale(0.0035)),
+        centerY + (portHalfHeight - scale(0.0035)),
+        scale(-0.123),
+        scale(-0.094),
+      );
+      CharacterNodeRenderer.addCuboid(
+        interiors,
+        portCenterX + (portHalfWidth - scale(0.0015)),
+        portCenterX + (portHalfWidth - scale(0.005)),
+        centerY - (portHalfHeight - scale(0.0035)),
+        centerY + (portHalfHeight - scale(0.0035)),
+        scale(-0.123),
+        scale(-0.094),
+      );
+      CharacterNodeRenderer.addCuboid(
+        interiors,
+        portCenterX - (portHalfWidth - scale(0.005)),
+        portCenterX + (portHalfWidth - scale(0.005)),
+        centerY - (portHalfHeight - scale(0.0035)),
+        centerY - (portHalfHeight - scale(0.0005)),
+        scale(-0.123),
+        scale(-0.094),
+      );
+
+      // Top shadow lip for a stronger socket recess effect
+      CharacterNodeRenderer.addCuboid(
+        interiors,
+        portCenterX - (portHalfWidth - scale(0.0065)),
+        portCenterX + (portHalfWidth - scale(0.0065)),
+        centerY + (portHalfHeight - scale(0.001)),
+        centerY + (portHalfHeight + scale(0.0025)),
+        scale(-0.121),
+        scale(-0.098),
+      );
+
+      CharacterNodeRenderer.addCuboid(
+        leds,
+        portCenterX - (portHalfWidth + scale(0.020)),
+        portCenterX - (portHalfWidth + scale(0.013)),
+        centerY + scale(0.012),
+        centerY + scale(0.020),
+        scale(-0.0915),
+        scale(-0.0865),
+      );
+      CharacterNodeRenderer.addCuboid(
+        leds,
+        portCenterX - (portHalfWidth + scale(0.020)),
+        portCenterX - (portHalfWidth + scale(0.013)),
+        centerY - scale(0.020),
+        centerY - scale(0.012),
+        scale(-0.0915),
+        scale(-0.0865),
       );
 
       // Gold contact rail
       CharacterNodeRenderer.addCuboid(
         contacts,
-        portCenterX - (portHalfWidth - scale(0.017)),
-        portCenterX + (portHalfWidth - scale(0.017)),
-        centerY + scale(0.015),
-        centerY + scale(0.018),
-        scale(-0.125),
-        scale(-0.119),
+        portCenterX - (portHalfWidth - scale(0.0105)),
+        portCenterX + (portHalfWidth - scale(0.0105)),
+        centerY + scale(0.0135),
+        centerY + scale(0.0175),
+        scale(-0.1235),
+        scale(-0.1155),
       );
 
       // Eight contact pins
       for (let pinIndex = 0; pinIndex < 8; pinIndex++) {
-        const pinX = portCenterX - scale(0.046) + pinIndex * scale(0.013);
+        const contactPinSpacing = scale(0.0092);
+        const pinX =
+          portCenterX - ((contactPinSpacing * 7) / 2) + pinIndex * contactPinSpacing;
         CharacterNodeRenderer.addCuboid(
           contacts,
-          pinX - scale(0.0018),
-          pinX + scale(0.0018),
-          centerY + scale(0.003),
-          centerY + scale(0.018),
-          scale(-0.1245),
-          scale(-0.1185),
+          pinX - scale(0.0011),
+          pinX + scale(0.0011),
+          centerY + scale(0.0015),
+          centerY + scale(0.0175),
+          scale(-0.123),
+          scale(-0.1145),
         );
       }
     }
 
-    return { body, cavities, contacts };
+    return { body, topCube, frames, interiors, contacts, leds };
   }
 
   private static createRenderingInfo(
@@ -371,14 +479,32 @@ void main() {
       normalAttributeLocation,
       gl,
     );
-    this.cavityRenderingInfo = CharacterNodeRenderer.createRenderingInfo(
-      switchMeshes.cavities,
+    this.topCubeRenderingInfo = CharacterNodeRenderer.createRenderingInfo(
+      switchMeshes.topCube,
+      positionAttributeLocation,
+      normalAttributeLocation,
+      gl,
+    );
+    this.frameRenderingInfo = CharacterNodeRenderer.createRenderingInfo(
+      switchMeshes.frames,
+      positionAttributeLocation,
+      normalAttributeLocation,
+      gl,
+    );
+    this.interiorRenderingInfo = CharacterNodeRenderer.createRenderingInfo(
+      switchMeshes.interiors,
       positionAttributeLocation,
       normalAttributeLocation,
       gl,
     );
     this.contactRenderingInfo = CharacterNodeRenderer.createRenderingInfo(
       switchMeshes.contacts,
+      positionAttributeLocation,
+      normalAttributeLocation,
+      gl,
+    );
+    this.ledRenderingInfo = CharacterNodeRenderer.createRenderingInfo(
+      switchMeshes.leds,
       positionAttributeLocation,
       normalAttributeLocation,
       gl,
@@ -426,26 +552,31 @@ void main() {
         GlContext.modelViewMatrix.current,
     );
 
+    // Orange body color
     this.drawMesh(
       this.bodyRenderingInfo,
-      [0.17, 0.17, 0.19],
-      [0.35, 0.35, 0.4],
+      [1.0, 0.5, 0.0], // orange diffuse
+      [1.0, 0.6, 0.2], // orange-ish specular
       14,
       gl,
     );
+    // Black top cube
     this.drawMesh(
-      this.cavityRenderingInfo,
-      [0.17, 0.17, 0.18],
-      [0.22, 0.22, 0.24],
-      8,
+      this.topCubeRenderingInfo,
+      [0.05, 0.05, 0.05], // black diffuse
+      [0.1, 0.1, 0.1],    // black specular
+      18,
       gl,
     );
+    this.drawMesh(this.frameRenderingInfo, [0.95, 0.95, 0.92], [0.55, 0.55, 0.52], 12, gl);
+    this.drawMesh(this.interiorRenderingInfo, [0.06, 0.06, 0.07], [0.18, 0.18, 0.2], 10, gl);
     this.drawMesh(
       this.contactRenderingInfo,
-      [0.64, 0.52, 0.14],
-      [0.85, 0.75, 0.3],
-      26,
+      [0.82, 0.69, 0.18],
+      [0.95, 0.86, 0.38],
+      34,
       gl,
     );
+    this.drawMesh(this.ledRenderingInfo, [0.2, 0.82, 0.24], [0.52, 0.95, 0.55], 40, gl);
   }
 }
