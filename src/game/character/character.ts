@@ -38,7 +38,7 @@ export class Character {
       this.getNodeTransformation(node, jointTransitions),
     );
 
-    if (node.isVisible) {
+    if (node.isVisible || node.joint === CharacterJoint.ROOT) {
       this.nodeRenderer.draw(node);
     }
 
