@@ -1,6 +1,8 @@
 # EthernetRacer
 
 Ethernet Racer is a clone of [TuxRacer](https://github.com/ebbejan/tux-racer-js) to try out agent-based programming. 
+[Play EthernetRacer online](http://ethernetracer.albrechtloh.de/)
+
 ![EthernetRacer Screenshot](screenshot.png)
 ![EthernetRacer Screenshot 2](screenshot2.png)
 
