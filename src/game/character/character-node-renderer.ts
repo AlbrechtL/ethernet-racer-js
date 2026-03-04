@@ -1,5 +1,4 @@
 import { GlContext } from "../../gl/gl-context.ts";
-import { SphereMesh } from "../../util/sphere-mesh.ts";
 import { CharacterNode } from "./character-node.ts";
 import { GlUtil } from "../../gl/gl-util.ts";
 import { ShaderFactory, ShaderLightSettings } from "../shader-factory.ts";
@@ -12,9 +11,6 @@ type NodeRenderingInfo = {
 };
 
 export class CharacterNodeRenderer {
-  public static readonly MIN_SPHERE_DIVISIONS = 3;
-  public static readonly MAX_SPHERE_DIVISIONS = 16;
-
   private static readonly VERTEX_SHADER = `#version 300 es
 in vec4 a_Position;
 in vec3 a_Normal;
@@ -57,7 +53,82 @@ void main() {
     useNormalMatrix: true,
   };
 
-  private readonly renderingInfo: Map<number, NodeRenderingInfo>;
+  private static readonly BOX_POSITIONS: number[] = [
+    // Front
+    -0.5, -0.5, 0.5,
+    0.5, -0.5, 0.5,
+    0.5, 0.5, 0.5,
+    -0.5, 0.5, 0.5,
+    // Back
+    0.5, -0.5, -0.5,
+    -0.5, -0.5, -0.5,
+    -0.5, 0.5, -0.5,
+    0.5, 0.5, -0.5,
+    // Left
+    -0.5, -0.5, -0.5,
+    -0.5, -0.5, 0.5,
+    -0.5, 0.5, 0.5,
+    -0.5, 0.5, -0.5,
+    // Right
+    0.5, -0.5, 0.5,
+    0.5, -0.5, -0.5,
+    0.5, 0.5, -0.5,
+    0.5, 0.5, 0.5,
+    // Top
+    -0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5,
+    0.5, 0.5, -0.5,
+    -0.5, 0.5, -0.5,
+    // Bottom
+    -0.5, -0.5, -0.5,
+    0.5, -0.5, -0.5,
+    0.5, -0.5, 0.5,
+    -0.5, -0.5, 0.5,
+  ];
+
+  private static readonly BOX_NORMALS: number[] = [
+    // Front
+    0, 0, 1,
+    0, 0, 1,
+    0, 0, 1,
+    0, 0, 1,
+    // Back
+    0, 0, -1,
+    0, 0, -1,
+    0, 0, -1,
+    0, 0, -1,
+    // Left
+    -1, 0, 0,
+    -1, 0, 0,
+    -1, 0, 0,
+    -1, 0, 0,
+    // Right
+    1, 0, 0,
+    1, 0, 0,
+    1, 0, 0,
+    1, 0, 0,
+    // Top
+    0, 1, 0,
+    0, 1, 0,
+    0, 1, 0,
+    0, 1, 0,
+    // Bottom
+    0, -1, 0,
+    0, -1, 0,
+    0, -1, 0,
+    0, -1, 0,
+  ];
+
+  private static readonly BOX_INDICES: number[] = [
+    0, 1, 2, 0, 2, 3,
+    4, 5, 6, 4, 6, 7,
+    8, 9, 10, 8, 10, 11,
+    12, 13, 14, 12, 14, 15,
+    16, 17, 18, 16, 18, 19,
+    20, 21, 22, 20, 22, 23,
+  ];
+
+  private renderingInfo: NodeRenderingInfo;
 
   private shader: WebGLProgram;
 
@@ -68,10 +139,6 @@ void main() {
   private materialDiffuseColorUniformLocation: WebGLUniformLocation;
   private materialSpecularColorUniformLocation: WebGLUniformLocation;
   private materialSpecularExponentUniformLocation: WebGLUniformLocation;
-
-  constructor() {
-    this.renderingInfo = new Map<number, NodeRenderingInfo>();
-  }
 
   public async init(): Promise<void> {
     const gl = GlContext.gl;
@@ -104,27 +171,23 @@ void main() {
     const [positionAttributeLocation, normalAttributeLocation] =
       Shaders.getAttributeLocations(this.shader, gl, "a_Position", "a_Normal");
 
-    for (
-      let numSphereDivisions = CharacterNodeRenderer.MIN_SPHERE_DIVISIONS;
-      numSphereDivisions <= CharacterNodeRenderer.MAX_SPHERE_DIVISIONS;
-      numSphereDivisions++
-    ) {
-      const sphereMesh = SphereMesh.generate(
-        1,
-        2 * numSphereDivisions,
-        numSphereDivisions,
-      );
+    const vertexArray = GlUtil.createAndBindVertexArray(gl);
+    GlUtil.bindPositions(
+      CharacterNodeRenderer.BOX_POSITIONS,
+      positionAttributeLocation,
+      gl,
+    );
+    GlUtil.bindIndices(CharacterNodeRenderer.BOX_INDICES, gl);
+    GlUtil.bindNormals(
+      CharacterNodeRenderer.BOX_NORMALS,
+      normalAttributeLocation,
+      gl,
+    );
 
-      const vertexArray = GlUtil.createAndBindVertexArray(gl);
-      GlUtil.bindPositions(sphereMesh.vertices, positionAttributeLocation, gl);
-      GlUtil.bindIndices(sphereMesh.indices, gl);
-      GlUtil.bindNormals(sphereMesh.normals, normalAttributeLocation, gl);
-
-      this.renderingInfo.set(numSphereDivisions, {
-        numIndices: sphereMesh.indices.length,
-        vertexArray,
-      } as NodeRenderingInfo);
-    }
+    this.renderingInfo = {
+      numIndices: CharacterNodeRenderer.BOX_INDICES.length,
+      vertexArray,
+    };
   }
 
   public prepareDrawing(): void {
@@ -150,13 +213,9 @@ void main() {
   }
 
   public draw(node: CharacterNode): void {
-    if (!node.isVisible || !node.material || !node.numSphereDivisions) {
+    if (!node.isVisible || !node.material) {
       return;
     }
-
-    const renderingInfo = this.renderingInfo.get(
-      node.numSphereDivisions,
-    ) as NodeRenderingInfo;
 
     const gl = GlContext.gl;
 
@@ -184,10 +243,10 @@ void main() {
       node.material.specularExponent,
     );
 
-    gl.bindVertexArray(renderingInfo.vertexArray);
+    gl.bindVertexArray(this.renderingInfo.vertexArray);
     gl.drawElements(
-      gl.TRIANGLE_STRIP,
-      renderingInfo.numIndices,
+      gl.TRIANGLES,
+      this.renderingInfo.numIndices,
       gl.UNSIGNED_SHORT,
       0,
     );
