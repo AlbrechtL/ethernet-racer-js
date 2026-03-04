@@ -133,7 +133,7 @@ Contributions are welcome! Feel free to submit issues, feature requests, or pull
 - Kristian Picon
 - Daniel Poeira
 
-### EthernetRacer Development
+### TuxRacer.js Development
 - Developed by Jan Ebbe
 
 ---
