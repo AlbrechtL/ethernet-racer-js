@@ -2,6 +2,7 @@
 
 Ethernet Racer is a clone of [TuxRacer](https://github.com/ebbejan/switch-racer-js) to try out agent-based programming. 
 ![EthernetRacer Screenshot](screenshot.png)
+![EthernetRacer Screenshot 2](screenshot2.png)
 
 It is a port / rewrite of *Extreme Tux Racer*, which itself is based on the original *Tux Racer* game. This project allows you to enjoy switch Racer directly in your web browser, supporting all major desktop and mobile browsers.
 
