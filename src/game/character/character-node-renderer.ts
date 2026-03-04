@@ -27,6 +27,9 @@ type SwitchMeshes = {
 };
 
 export class CharacterNodeRenderer {
+  public static readonly MIN_SPHERE_DIVISIONS = 3;
+  public static readonly MAX_SPHERE_DIVISIONS = 16;
+
   private static readonly VERTEX_SHADER = `#version 300 es
 in vec4 a_Position;
 in vec3 a_Normal;
