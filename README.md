@@ -121,7 +121,7 @@ Available query parameters:
 
 Example using the Weidmuller STEP model:
 ```
-http://localhost:5173/?course=tux-at-home&switchMeshUrl=https://assets.dam.weidmueller.com/assets/api/615058a2-353d-4143-a44b-60341df3cf1b/original/2682130000.stp&switchMeshScale=1.25,1.25,1.25&switchMeshRotation=0,180,0&switchMeshTranslation=0,0,0
+http://localhost:5173/?course=tux-at-home&switchMeshUrl=https://assets.dam.weidmueller.com/assets/api/615058a2-353d-4143-a44b-60341df3cf1b/original/2682130000.stp&switchMeshScale=1.5,1.5,1.5&switchMeshRotation=180,90,90&switchMeshTranslation=0,0,0
 ```
 
 Notes:

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Ethernet Racer</title>
+	<style>
+		:root {
+			--bg-top: #05070b;
+			--bg-bottom: #0f1520;
+			--panel: rgba(12, 16, 24, 0.84);
+			--panel-border: rgba(182, 198, 224, 0.18);
+			--text: #eef3fa;
+			--muted: #b5c0d1;
+			--accent: #7090c0;
+			--accent-soft: #d0d8e4;
+			--accent-strong: #c0d0e0;
+			--shadow: 0 26px 72px rgba(0, 0, 0, 0.42);
+			--radius-lg: 28px;
+			--radius-md: 18px;
+			--radius-sm: 12px;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		html {
+			color-scheme: dark;
+		}
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			font-family: "Avenir Next", "Segoe UI", "Trebuchet MS", sans-serif;
+			color: var(--text);
+			background:
+				radial-gradient(circle at top left, rgba(112, 144, 192, 0.18), transparent 34%),
+				radial-gradient(circle at 85% 20%, rgba(208, 216, 228, 0.16), transparent 28%),
+				linear-gradient(160deg, var(--bg-top), var(--bg-bottom));
+		}
+
+		body::before,
+		body::after {
+			content: "";
+			position: fixed;
+			inset: auto;
+			pointer-events: none;
+			z-index: 0;
+		}
+
+		body::before {
+			top: 6vh;
+			right: -8vw;
+			width: 28rem;
+			height: 28rem;
+			border-radius: 42% 58% 55% 45%;
+			background: radial-gradient(circle, rgba(112, 144, 192, 0.24), rgba(112, 144, 192, 0));
+			filter: blur(10px);
+		}
+
+		body::after {
+			bottom: -10vh;
+			left: -10vw;
+			width: 34rem;
+			height: 34rem;
+			border-radius: 55% 45% 38% 62%;
+			background: radial-gradient(circle, rgba(192, 208, 224, 0.18), rgba(192, 208, 224, 0));
+			filter: blur(18px);
+		}
+
+		.shell {
+			position: relative;
+			z-index: 1;
+			width: min(1100px, calc(100% - 2rem));
+			margin: 0 auto;
+			padding: 2rem 0 3rem;
+		}
+
+		.hero {
+			padding: clamp(2rem, 5vw, 4rem);
+			border: 1px solid var(--panel-border);
+			border-radius: var(--radius-lg);
+			background:
+				linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01)),
+				var(--panel);
+			box-shadow: var(--shadow);
+			backdrop-filter: blur(12px);
+		}
+
+		.hero-grid {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 1.25rem;
+			align-items: start;
+		}
+
+		.eyebrow {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.55rem;
+			margin-bottom: 1.2rem;
+			padding: 0.45rem 0.8rem;
+			border-radius: 999px;
+			letter-spacing: 0.14em;
+			text-transform: uppercase;
+			font-size: 0.78rem;
+			color: var(--accent-soft);
+			background: rgba(112, 144, 192, 0.16);
+		}
+
+		.eyebrow::before {
+			content: "";
+			width: 0.65rem;
+			height: 0.65rem;
+			border-radius: 50%;
+			background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+			box-shadow: 0 0 18px rgba(112, 144, 192, 0.55);
+		}
+
+		.title-art {
+			display: block;
+			width: min(100%, 23rem);
+			height: auto;
+			margin: 0 auto;
+			border-radius: 20px;
+			box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+		}
+
+		.lead {
+			max-width: 40rem;
+			margin: 1.4rem auto 0;
+			font-size: clamp(1.05rem, 2vw, 1.3rem);
+			line-height: 1.65;
+			color: var(--muted);
+			text-align: center;
+		}
+
+		.grid {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 1.25rem;
+			margin-top: 2rem;
+		}
+
+		.card {
+			min-width: 0;
+			padding: 1.4rem;
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			border-radius: var(--radius-md);
+			background: rgba(7, 14, 24, 0.56);
+		}
+
+		.card h2 {
+			margin: 0 0 0.85rem;
+			font-size: 1rem;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			color: var(--accent-soft);
+		}
+
+		.card p {
+			margin: 0;
+			color: var(--muted);
+			line-height: 1.6;
+		}
+
+		.actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.9rem;
+			margin-top: 1.4rem;
+		}
+
+		.play-grid {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 0.95rem;
+			margin-top: 1.25rem;
+		}
+
+		.play-option {
+			padding: 1rem;
+			border: 1px solid rgba(192, 208, 224, 0.14);
+			border-radius: var(--radius-sm);
+			background: linear-gradient(180deg, rgba(192, 208, 224, 0.05), rgba(255, 255, 255, 0.01));
+		}
+
+		.play-option h3 {
+			margin: 0;
+			font-size: 1.2rem;
+		}
+
+		.play-option p {
+			margin-top: 0.55rem;
+			font-size: 0.96rem;
+		}
+
+		.play-option .button-link {
+			width: 100%;
+			margin-top: 1rem;
+		}
+
+		.button-link {
+			transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+		}
+
+		.button-link {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-height: 3.4rem;
+			padding: 0.9rem 1.3rem;
+			border-radius: var(--radius-sm);
+			border: 1px solid rgba(255, 255, 255, 0.12);
+			color: var(--text);
+			text-decoration: none;
+			font-weight: 700;
+			letter-spacing: 0.02em;
+			background: rgba(255, 255, 255, 0.05);
+		}
+
+		.button-link:hover,
+		.button-link:focus-visible {
+			transform: translateY(-2px);
+			border-color: rgba(192, 208, 224, 0.55);
+			outline: none;
+		}
+
+		.button-link:focus-visible {
+			box-shadow: 0 0 0 4px rgba(192, 208, 224, 0.18);
+		}
+
+		.button-link.primary {
+			color: #09111a;
+			background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+			border-color: rgba(192, 208, 224, 0.7);
+		}
+
+		.button-link.secondary {
+			background: rgba(29, 39, 58, 0.78);
+		}
+
+		.footer-note {
+			margin-top: 1rem;
+			color: var(--muted);
+			font-size: 0.92rem;
+		}
+
+		@media (max-width: 860px) {
+			.grid {
+				grid-template-columns: 1fr;
+			}
+
+			.play-grid {
+				grid-template-columns: 1fr;
+			}
+
+			h1 {
+				max-width: none;
+			}
+		}
+
+		@media (max-width: 560px) {
+			.shell {
+				width: min(100% - 1rem, 1100px);
+				padding-top: 0.5rem;
+				padding-bottom: 1.5rem;
+			}
+
+			.hero {
+				padding: 1.2rem;
+				border-radius: 22px;
+			}
+
+			.actions {
+				flex-direction: column;
+			}
+
+			.button-link {
+				width: 100%;
+			}
+		}
+	</style>
+</head>
+<body>
+	<main class="shell">
+		<section class="hero">
+			<div class="hero-grid">
+				<div>
+					<img class="title-art" src="./splash.webp" alt="Ethernet Racer splash screen artwork">
+					<p class="lead">
+						Choose a Weidmueller switch and launch straight into a run with the STEP file streamed from Weidmueller servers at runtime.
+					</p>
+
+					<div class="grid">
+						<section class="card" aria-labelledby="play-and-source-title">
+							<h2 id="play-and-source-title">Choose your switch</h2>
+							<p>
+								Start the hosted game on the tux-at-home course with one of two industrial Ethernet switches.
+								Both entries use the same transform and load their STEP geometry directly from Weidmueller infrastructure.
+							</p>
+							<div class="play-grid">
+								<section class="play-option" aria-labelledby="model-2682130000-title">
+									<h3 id="model-2682130000-title">IE-SW-EL05-5TX</h3>
+									<p>
+										Launch the game with the Weidmueller EcoLine unmanaged switch, article number 2682130000.
+									</p>
+									<a class="button-link primary" href="https://ethernetracer.albrechtloh.de/ethracer/?switchMeshUrl=https%3A%2F%2Fassets.dam.weidmueller.com%2Fassets%2Fapi%2F615058a2-353d-4143-a44b-60341df3cf1b%2Foriginal%2F2682130000.stp&amp;switchMeshScale=1.5,1.5,1.5&amp;switchMeshRotation=180,90,90&amp;switchMeshTranslation=0,0,0">Play With IE-SW-EL05-5TX</a>
+								</section>
+								<section class="play-option" aria-labelledby="model-2682330000-title">
+									<h3 id="model-2682330000-title">IE-SW-AL18M-16TX-2GC</h3>
+									<p>
+										Launch the game with the Weidmueller AdvancedLine managed switch, article number 2682330000.
+									</p>
+									<a class="button-link primary" href="https://ethernetracer.albrechtloh.de/ethracer/?switchMeshUrl=https%3A%2F%2Fassets.dam.weidmueller.com%2Fassets%2Fapi%2F2117cc73-946a-4fc6-8f1a-71bb2f879cfc%2Foriginal%2F2682330000.stp&amp;switchMeshScale=1.5,1.5,1.5&amp;switchMeshRotation=0,180,0&amp;switchMeshTranslation=0,0,0">Play With IE-SW-AL18M-16TX-2GC</a>
+								</section>
+							</div>
+							<div class="actions">
+								<a class="button-link secondary" href="https://github.com/AlbrechtL/ethernet-racer-js" target="_blank" rel="noreferrer">View Source on GitHub</a>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+
+			<p class="footer-note">
+				This page is the front door to the game: pick a switch, recognize the familiar splash screen, and start a run with geometry fetched directly from Weidmueller infrastructure. This project is a private initiative and is not affiliated with or endorsed by Weidmueller. All trademarks and product names are the property of their respective owners.
+			</p>
+		</section>
+	</main>
+</body>
+</html>
