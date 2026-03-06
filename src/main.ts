@@ -198,7 +198,11 @@ function onGameTerminated(aborted = false): void {
     const environmentIndex = Math.floor(Environments.ALL.length * Math.random());
     const environmentKey = Environments.ALL[environmentIndex].key;
 
-    setTimeout(() => (window.location.href = `./index.html?course=${courseKey}&environment=${environmentKey}`), 500);
+    const nextCourseUrl = new URL(window.location.href);
+    nextCourseUrl.searchParams.set("course", courseKey);
+    nextCourseUrl.searchParams.set("environment", environmentKey);
+
+    setTimeout(() => (window.location.href = nextCourseUrl.toString()), 500);
   }
 }
 
