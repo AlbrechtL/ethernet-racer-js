@@ -27,6 +27,11 @@ type FaceVertex = {
 
 type OcctMesh = {
   color?: number[];
+  brep_faces?: {
+    first: number;
+    last: number;
+    color?: number[] | null;
+  }[];
   attributes?: {
     position?: { array?: number[] };
     normal?: { array?: number[] };
@@ -191,7 +196,7 @@ export namespace RemoteMeshLoader {
         positions: mesh.attributes?.position?.array ?? [],
         normals: mesh.attributes?.normal?.array ?? [],
         indices: mesh.index?.array ?? [],
-        diffuseColor: toMaterialColor(mesh.color),
+        diffuseColor: getStepMeshColor(mesh),
       }))
       .filter((mesh) => mesh.positions.length > 0 && mesh.indices.length > 0);
 
@@ -207,6 +212,23 @@ export namespace RemoteMeshLoader {
       return undefined;
     }
     return [color[0], color[1], color[2]];
+  }
+
+  function getStepMeshColor(mesh: OcctMesh): MaterialColor | undefined {
+    const faceColors = [
+      ...new Set(
+        (mesh.brep_faces ?? [])
+          .map((face) => face.color ?? undefined)
+          .filter((color): color is number[] => !!color)
+          .map((color) => JSON.stringify(color)),
+      ),
+    ].map((color) => JSON.parse(color) as number[]);
+
+    if (faceColors.length === 1) {
+      return toMaterialColor(faceColors[0]);
+    }
+
+    return toMaterialColor(mesh.color);
   }
 
   async function getOcctModule(): Promise<OcctModule> {
