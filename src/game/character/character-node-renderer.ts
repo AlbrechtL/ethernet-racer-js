@@ -5,25 +5,30 @@ import { ShaderFactory, ShaderLightSettings } from "../shader-factory.ts";
 import { Shaders } from "../../gl/shaders.ts";
 import { Matrices } from "../../math/matrices.ts";
 import { CharacterJoint } from "./character-joint.ts";
+import { RemoteMeshLoader } from "./remote-mesh-loader.ts";
+import { MaterialColor, RemoteMeshData, RemoteMeshDescriptor } from "./remote-mesh.ts";
 
 type NodeRenderingInfo = {
   numIndices: number;
+  indexType: GLenum;
   vertexArray: WebGLVertexArrayObject;
 };
 
-type MeshData = {
-  positions: number[];
-  normals: number[];
-  indices: number[];
+type SwitchMeshes = {
+  body: RemoteMeshData;
+  topCube: RemoteMeshData;
+  frames: RemoteMeshData;
+  interiors: RemoteMeshData;
+  contacts: RemoteMeshData;
+  leds: RemoteMeshData;
 };
 
-type SwitchMeshes = {
-  body: MeshData;
-  topCube: MeshData;
-  frames: MeshData;
-  interiors: MeshData;
-  contacts: MeshData;
-  leds: MeshData;
+type RemoteMeshEntry = {
+  descriptor: RemoteMeshDescriptor;
+  parts: {
+    diffuseColor?: MaterialColor;
+    renderingInfo: NodeRenderingInfo;
+  }[];
 };
 
 export class CharacterNodeRenderer {
@@ -72,6 +77,8 @@ void main() {
     useNormalMatrix: true,
   };
 
+  private readonly remoteMeshEntries = new WeakMap<CharacterNode, RemoteMeshEntry>();
+
   private bodyRenderingInfo: NodeRenderingInfo;
   private topCubeRenderingInfo: NodeRenderingInfo;
   private frameRenderingInfo: NodeRenderingInfo;
@@ -90,7 +97,7 @@ void main() {
   private materialSpecularExponentUniformLocation: WebGLUniformLocation;
 
   private static addCuboid(
-    meshData: MeshData,
+    meshData: RemoteMeshData,
     minX: number,
     maxX: number,
     minY: number,
@@ -165,12 +172,12 @@ void main() {
   }
 
   private static createSwitchMeshes(): SwitchMeshes {
-    const body: MeshData = { positions: [], normals: [], indices: [] };
-    const topCube: MeshData = { positions: [], normals: [], indices: [] };
-    const frames: MeshData = { positions: [], normals: [], indices: [] };
-    const interiors: MeshData = { positions: [], normals: [], indices: [] };
-    const contacts: MeshData = { positions: [], normals: [], indices: [] };
-    const leds: MeshData = { positions: [], normals: [], indices: [] };
+    const body: RemoteMeshData = { positions: [], normals: [], indices: [] };
+    const topCube: RemoteMeshData = { positions: [], normals: [], indices: [] };
+    const frames: RemoteMeshData = { positions: [], normals: [], indices: [] };
+    const interiors: RemoteMeshData = { positions: [], normals: [], indices: [] };
+    const contacts: RemoteMeshData = { positions: [], normals: [], indices: [] };
+    const leds: RemoteMeshData = { positions: [], normals: [], indices: [] };
 
     const meshScale = 2;
     const scale = (value: number): number => value * meshScale;
@@ -203,7 +210,6 @@ void main() {
       scale(0.035),
     );
 
-    // Back RJ45 panel area: 5 ports stacked vertically (like reference image)
     CharacterNodeRenderer.addCuboid(
       body,
       scale(-0.118),
@@ -223,7 +229,6 @@ void main() {
     for (let portIndex = 0; portIndex < 5; portIndex++) {
       const centerY = topPortCenterY - portIndex * portStepY;
 
-      // Opening frame walls (square-ish mouth)
       CharacterNodeRenderer.addCuboid(
         frames,
         portCenterX - (portHalfWidth + scale(0.0045)),
@@ -261,7 +266,6 @@ void main() {
         scale(-0.09),
       );
 
-      // Front bezel ring to make the white jack outline pop
       CharacterNodeRenderer.addCuboid(
         frames,
         portCenterX - (portHalfWidth + scale(0.0065)),
@@ -299,7 +303,6 @@ void main() {
         scale(-0.085),
       );
 
-      // Deep back plate inside cavity
       CharacterNodeRenderer.addCuboid(
         interiors,
         portCenterX - (portHalfWidth - scale(0.0085)),
@@ -309,8 +312,6 @@ void main() {
         scale(-0.131),
         scale(-0.124),
       );
-
-      // Upper latch shelf inside cavity
       CharacterNodeRenderer.addCuboid(
         interiors,
         portCenterX - (portHalfWidth - scale(0.0125)),
@@ -320,8 +321,6 @@ void main() {
         scale(-0.115),
         scale(-0.101),
       );
-
-      // Inner dark side walls and floor for stronger depth cue
       CharacterNodeRenderer.addCuboid(
         interiors,
         portCenterX - (portHalfWidth - scale(0.005)),
@@ -349,8 +348,6 @@ void main() {
         scale(-0.123),
         scale(-0.094),
       );
-
-      // Top shadow lip for a stronger socket recess effect
       CharacterNodeRenderer.addCuboid(
         interiors,
         portCenterX - (portHalfWidth - scale(0.0065)),
@@ -380,7 +377,6 @@ void main() {
         scale(-0.0865),
       );
 
-      // Gold contact rail
       CharacterNodeRenderer.addCuboid(
         contacts,
         portCenterX - (portHalfWidth - scale(0.0105)),
@@ -391,7 +387,6 @@ void main() {
         scale(-0.1155),
       );
 
-      // Eight contact pins
       for (let pinIndex = 0; pinIndex < 8; pinIndex++) {
         const contactPinSpacing = scale(0.0092);
         const pinX =
@@ -412,18 +407,20 @@ void main() {
   }
 
   private static createRenderingInfo(
-    meshData: MeshData,
+    meshData: RemoteMeshData,
     positionAttributeLocation: GLint,
     normalAttributeLocation: GLint,
     gl: WebGL2RenderingContext,
   ): NodeRenderingInfo {
     const vertexArray = GlUtil.createAndBindVertexArray(gl);
     GlUtil.bindPositions(meshData.positions, positionAttributeLocation, gl);
-    GlUtil.bindIndices(meshData.indices, gl);
+    const useUInt32 = meshData.positions.length / 3 > 65535;
+    GlUtil.bindIndices(meshData.indices, gl, useUInt32);
     GlUtil.bindNormals(meshData.normals, normalAttributeLocation, gl);
 
     return {
       numIndices: meshData.indices.length,
+      indexType: useUInt32 ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT,
       vertexArray,
     };
   }
@@ -440,10 +437,10 @@ void main() {
     gl.uniform1f(this.materialSpecularExponentUniformLocation, specularExponent);
 
     gl.bindVertexArray(renderingInfo.vertexArray);
-    gl.drawElements(gl.TRIANGLES, renderingInfo.numIndices, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.TRIANGLES, renderingInfo.numIndices, renderingInfo.indexType, 0);
   }
 
-  public async init(): Promise<void> {
+  public async init(nodes: CharacterNode[]): Promise<void> {
     const gl = GlContext.gl;
 
     this.shader = ShaderFactory.createShader(
@@ -512,6 +509,29 @@ void main() {
       normalAttributeLocation,
       gl,
     );
+
+    await Promise.all(
+      nodes
+        .filter((node) => !!node.remoteMesh)
+        .map(async (node) => {
+          try {
+            const descriptor = node.remoteMesh as RemoteMeshDescriptor;
+            const remoteMesh = await RemoteMeshLoader.load(descriptor);
+            const parts = remoteMesh.parts.map((part) => ({
+              diffuseColor: part.diffuseColor,
+              renderingInfo: CharacterNodeRenderer.createRenderingInfo(
+                part,
+                positionAttributeLocation,
+                normalAttributeLocation,
+                gl,
+              ),
+            }));
+            this.remoteMeshEntries.set(node, { descriptor, parts });
+          } catch (error) {
+            console.error("Could not load remote mesh for character node", error);
+          }
+        }),
+    );
   }
 
   public prepareDrawing(): void {
@@ -529,18 +549,10 @@ void main() {
       false,
       GlContext.perspectiveMatrix,
     );
-    gl.uniformMatrix4fv(
-      this.viewMatrixUniformLocation,
-      false,
-      GlContext.viewMatrix,
-    );
+    gl.uniformMatrix4fv(this.viewMatrixUniformLocation, false, GlContext.viewMatrix);
   }
 
   public draw(node: CharacterNode): void {
-    if (node.joint !== CharacterJoint.ROOT) {
-      return;
-    }
-
     const gl = GlContext.gl;
 
     gl.uniformMatrix4fv(
@@ -555,22 +567,34 @@ void main() {
         GlContext.modelViewMatrix.current,
     );
 
-    // Orange body color
-    this.drawMesh(
-      this.bodyRenderingInfo,
-      [1.0, 0.5, 0.0], // orange diffuse
-      [1.0, 0.6, 0.2], // orange-ish specular
-      14,
-      gl,
-    );
-    // Black top cube
-    this.drawMesh(
-      this.topCubeRenderingInfo,
-      [0.05, 0.05, 0.05], // black diffuse
-      [0.1, 0.1, 0.1],    // black specular
-      18,
-      gl,
-    );
+    const remoteMeshEntry = this.remoteMeshEntries.get(node);
+    if (remoteMeshEntry) {
+      remoteMeshEntry.parts.forEach((part) => {
+        const diffuseColor =
+          remoteMeshEntry.descriptor.diffuseColor ??
+          part.diffuseColor ??
+          [1.0, 0.5, 0.0];
+        const specularColor =
+          remoteMeshEntry.descriptor.specularColor ??
+          createSpecularColor(diffuseColor);
+
+        this.drawMesh(
+          part.renderingInfo,
+          diffuseColor,
+          specularColor,
+          remoteMeshEntry.descriptor.specularExponent ?? 22,
+          gl,
+        );
+      });
+      return;
+    }
+
+    if (node.joint !== CharacterJoint.ROOT) {
+      return;
+    }
+
+    this.drawMesh(this.bodyRenderingInfo, [1.0, 0.5, 0.0], [1.0, 0.6, 0.2], 14, gl);
+    this.drawMesh(this.topCubeRenderingInfo, [0.05, 0.05, 0.05], [0.1, 0.1, 0.1], 18, gl);
     this.drawMesh(this.frameRenderingInfo, [0.95, 0.95, 0.92], [0.55, 0.55, 0.52], 12, gl);
     this.drawMesh(this.interiorRenderingInfo, [0.06, 0.06, 0.07], [0.18, 0.18, 0.2], 10, gl);
     this.drawMesh(
@@ -582,4 +606,12 @@ void main() {
     );
     this.drawMesh(this.ledRenderingInfo, [0.2, 0.82, 0.24], [0.52, 0.95, 0.55], 40, gl);
   }
+}
+
+function createSpecularColor(diffuseColor: MaterialColor): MaterialColor {
+  return [
+    Math.min(diffuseColor[0] + 0.2, 1.0),
+    Math.min(diffuseColor[1] + 0.2, 1.0),
+    Math.min(diffuseColor[2] + 0.2, 1.0),
+  ];
 }

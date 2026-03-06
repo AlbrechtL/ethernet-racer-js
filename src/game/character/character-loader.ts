@@ -9,6 +9,11 @@ import { MathUtil } from "../../math/math-util.ts";
 import { CharacterNodeRenderer } from "./character-node-renderer.ts";
 import { Axis } from "../../math/axis.ts";
 import { CharacterName } from "./character-name.ts";
+import { RemoteMeshDescriptor } from "./remote-mesh.ts";
+
+type CharacterLoadOptions = {
+  rootRemoteMesh?: RemoteMeshDescriptor;
+};
 
 export namespace CharacterLoader {
   type CharacterDto = {
@@ -46,12 +51,15 @@ export namespace CharacterLoader {
     SCL,
   }
 
-  export async function load(name: CharacterName): Promise<Character> {
+  export async function load(
+    name: CharacterName,
+    options: CharacterLoadOptions = {},
+  ): Promise<Character> {
     const response = await fetch(`assets/character/${name}/character.json`);
     const characterDto = (await response.json()) as CharacterDto;
 
     const materialMap = createMaterialMap(characterDto.materials);
-    const nodeMap = createNodeMap(characterDto.nodes, materialMap);
+    const nodeMap = createNodeMap(characterDto.nodes, materialMap, options);
     const hierarchyMap = createHierarchyMap(nodeMap);
     const rootNode = nodeMap.get(0) as CharacterNode;
 
@@ -81,9 +89,10 @@ export namespace CharacterLoader {
   function createNodeMap(
     nodeDtos: NodeDto[],
     materialMap: Map<string, CharacterMaterial>,
+    options: CharacterLoadOptions,
   ): Map<number, CharacterNode> {
     const map = new Map<number, CharacterNode>();
-    map.set(0, createRootNode());
+    map.set(0, createRootNode(options));
 
     nodeDtos.forEach((nodeDto) => {
       const parent = map.get(nodeDto.parentId) as CharacterNode;
@@ -93,12 +102,13 @@ export namespace CharacterLoader {
     return map;
   }
 
-  function createRootNode(): CharacterNode {
+  function createRootNode(options: CharacterLoadOptions): CharacterNode {
     return {
       joint: CharacterJoint.ROOT,
       isVisible: false,
       hasShadow: false,
       numSphereDivisions: 0,
+      remoteMesh: options.rootRemoteMesh,
       transformation: Matrices.createIdentity(),
     } as CharacterNode;
   }
@@ -115,6 +125,7 @@ export namespace CharacterLoader {
       isVisible: isVisible(nodeDto),
       hasShadow: !!nodeDto.shadow,
       numSphereDivisions: getNumSphereDivisions(nodeDto),
+      remoteMesh: undefined,
       transformation: computeTransformation(nodeDto),
     } as CharacterNode;
   }

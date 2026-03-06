@@ -1,4 +1,3 @@
-// @ts-expect-error ignore css module
 import "./style.css";
 
 import { RacingScene } from "./game/racing-scene.ts";
@@ -14,9 +13,12 @@ import { TouchInput } from "./input/touch-input.ts";
 import { CourseConfig, CourseConfigs } from "./game/course/course-configs.ts";
 import { Environment, Environments } from "./game/environment/environments.ts";
 import { Hud } from "./hud.ts";
+import { RemoteMeshDescriptor } from "./game/character/remote-mesh.ts";
+import { RuntimeConfig } from "./game/runtime-config.ts";
 
 const courseConfig = getCourseConfigFromUrl();
 const environment = getEnvironmentFromUrl();
+const runtimeConfig = getRuntimeConfigFromUrl();
 
 const canvas: HTMLCanvasElement = document.getElementById(
   "game-canvas",
@@ -34,7 +36,7 @@ const keyInput = new KeyInput();
 const touchInput = new TouchInput();
 
 const racingScene = new RacingScene();
-await racingScene.init(courseConfig, environment);
+await racingScene.init(courseConfig, environment, runtimeConfig);
 
 hideLoadingScreen();
 
@@ -107,6 +109,66 @@ function getEnvironmentFromUrl(): Environment {
     return Environments.SUNNY;
   }
   return Environments.BY_KEY.get(environment) as Environment
+}
+
+function getRuntimeConfigFromUrl(): RuntimeConfig {
+  return {
+    switchMesh: getSwitchMeshFromUrl(),
+  };
+}
+
+function getSwitchMeshFromUrl(): RemoteMeshDescriptor | undefined {
+  const urlParams = new URLSearchParams(window.location.search);
+  const meshUrl = urlParams.get("switchMeshUrl");
+  if (!meshUrl) {
+    return undefined;
+  }
+
+  return {
+    url: meshUrl,
+    scale: getVector3FromUrl(urlParams, "switchMeshScale") ?? [1.15, 1.15, 1.15],
+    rotation: getVector3FromUrl(urlParams, "switchMeshRotation") ?? [0, 0, 0],
+    translation: getVector3FromUrl(urlParams, "switchMeshTranslation") ?? [0, 0, 0],
+    diffuseColor: getVector3FromUrl(urlParams, "switchMeshDiffuseColor"),
+    specularColor: getVector3FromUrl(urlParams, "switchMeshSpecularColor"),
+    specularExponent: getNumberFromUrl(urlParams, "switchMeshSpecularExponent"),
+  };
+}
+
+function getVector3FromUrl(
+  urlParams: URLSearchParams,
+  parameterName: string,
+): [number, number, number] | undefined {
+  const rawValue = urlParams.get(parameterName);
+  if (!rawValue) {
+    return undefined;
+  }
+
+  const values = rawValue.split(",").map((value) => Number.parseFloat(value));
+  if (values.length !== 3 || values.some((value) => !Number.isFinite(value))) {
+    console.warn(`Ignoring invalid ${parameterName} value: ${rawValue}`);
+    return undefined;
+  }
+
+  return [values[0], values[1], values[2]];
+}
+
+function getNumberFromUrl(
+  urlParams: URLSearchParams,
+  parameterName: string,
+): number | undefined {
+  const rawValue = urlParams.get(parameterName);
+  if (!rawValue) {
+    return undefined;
+  }
+
+  const parsedValue = Number.parseFloat(rawValue);
+  if (!Number.isFinite(parsedValue)) {
+    console.warn(`Ignoring invalid ${parameterName} value: ${rawValue}`);
+    return undefined;
+  }
+
+  return parsedValue;
 }
 
 function hideLoadingScreen(): void {

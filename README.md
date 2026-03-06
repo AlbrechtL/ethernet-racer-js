@@ -100,6 +100,34 @@ http://localhost:5173/?course=downhill-fear&environment=night
 ```
 This would start the game on *Downhill Fear* with a *Night* environment.
 
+### Replacing the Switch Model at Runtime
+The root switch model can be replaced at runtime by passing a remote mesh URL as a query parameter. This keeps third-party geometry out of the repository.
+
+Supported formats:
+- `OBJ`
+- `STEP` / `STP`
+
+Available query parameters:
+
+| Parameter | Description | Example |
+| --------- | ----------- | ------- |
+| `switchMeshUrl` | URL of the remote mesh file to load at runtime. | `https://example.com/model.obj` |
+| `switchMeshScale` | Per-axis scale as `x,y,z`. | `1.25,1.25,1.25` |
+| `switchMeshRotation` | Per-axis rotation in degrees as `x,y,z`. | `0,180,0` |
+| `switchMeshTranslation` | Per-axis translation as `x,y,z`. | `0,0,0` |
+| `switchMeshDiffuseColor` | Optional RGB override as `r,g,b` in the range `0..1`. If omitted, imported mesh colors are used when available. | `1,0.5,0` |
+| `switchMeshSpecularColor` | Optional RGB specular override as `r,g,b` in the range `0..1`. | `0.9,0.8,0.4` |
+| `switchMeshSpecularExponent` | Optional specular exponent override. | `22` |
+
+Example using the Weidmuller STEP model:
+```
+http://localhost:5173/?course=tux-at-home&switchMeshUrl=https://assets.dam.weidmueller.com/assets/api/615058a2-353d-4143-a44b-60341df3cf1b/original/2682130000.stp&switchMeshScale=1.25,1.25,1.25&switchMeshRotation=0,180,0&switchMeshTranslation=0,0,0
+```
+
+Notes:
+- The remote server must allow cross-origin requests. If the mesh URL does not provide CORS headers, the game falls back to the built-in switch model.
+- STEP support uses a browser-side WASM importer, so initial loading is heavier than OBJ.
+
 ---
 
 ## Contributing

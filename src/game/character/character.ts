@@ -21,7 +21,7 @@ export class Character {
   }
 
   public async init(): Promise<void> {
-    await this.nodeRenderer.init();
+    await this.nodeRenderer.init(this.collectNodes());
   }
 
   public draw(jointTransitions: Map<CharacterJoint, Matrix4>): void {
@@ -60,5 +60,23 @@ export class Character {
       return jointTransitions.get(node.joint) ?? node.transformation;
     }
     return node.transformation;
+  }
+
+  private collectNodes(): CharacterNode[] {
+    const nodes: CharacterNode[] = [];
+
+    const visitNode = (node: CharacterNode): void => {
+      nodes.push(node);
+
+      const children = this.hierarchyMap.get(node);
+      if (!children) {
+        return;
+      }
+
+      children.forEach(visitNode);
+    };
+
+    visitNode(this.rootNode);
+    return nodes;
   }
 }

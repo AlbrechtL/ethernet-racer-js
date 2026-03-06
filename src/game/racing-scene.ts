@@ -27,6 +27,7 @@ import { Terrain } from "./course/terrains.ts";
 import { TouchState } from "../input/touch-state.ts";
 import { CharacterName } from "./character/character-name.ts";
 import { AnimationName } from "./animation/animation-name.ts";
+import { RuntimeConfig } from "./runtime-config.ts";
 
 export class RacingScene {
   private static readonly BACKGROUND_COLOR: Color = [0.4, 0.6, 0.8, 1];
@@ -47,6 +48,7 @@ export class RacingScene {
   public async init(
     courseConfig: CourseConfig,
     environment: Environment,
+    runtimeConfig: RuntimeConfig = {},
   ): Promise<void> {
     GameContext.environment = environment;
     GameContext.courseConfig = courseConfig;
@@ -77,7 +79,9 @@ export class RacingScene {
     this.camera = new Camera();
     this.camera.init();
 
-    this.character = await CharacterLoader.load(CharacterName.TUX);
+    this.character = await CharacterLoader.load(CharacterName.TUX, {
+      rootRemoteMesh: runtimeConfig.switchMesh,
+    });
     await this.character.init();
 
     this.trackMarks = new TrackMarks();

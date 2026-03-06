@@ -1,6 +1,7 @@
 import { CharacterMaterial } from "./character-material.ts";
 import { CharacterJoint } from "./character-joint.ts";
 import { Matrix4 } from "../../math/matrices.ts";
+import { RemoteMeshDescriptor } from "./remote-mesh.ts";
 
 export type CharacterNode = {
   parent: CharacterNode;
@@ -9,5 +10,6 @@ export type CharacterNode = {
   isVisible: boolean;
   hasShadow: boolean;
   numSphereDivisions: number | undefined;
+  remoteMesh: RemoteMeshDescriptor | undefined;
   transformation: Matrix4;
 };
